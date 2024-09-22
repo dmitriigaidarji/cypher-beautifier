@@ -1,6 +1,6 @@
 {
   "extends": "./tsconfig",
-  "include":  ["src/lib"],
+  "include": ["src/lib"],
   "compilerOptions": {
     "typeRoots": ["./dist/index.d.ts", "node_modules/@types"]
   }
