@@ -25,7 +25,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build-web": "tsc && vite --config vite-web.config.js build",
+    "build": "tsc --p tsconfig-lib.json && vite --config vite-lib.config.js build",
     "preview": "vite preview",
     "test": "vitest"
   },

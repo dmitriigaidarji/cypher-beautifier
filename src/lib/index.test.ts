@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import beautifyCypher from "./index.js";
+import beautifyCypher from "./index.ts";
 
 const f = beautifyCypher;
 test("Keywords have spaces", () => {
