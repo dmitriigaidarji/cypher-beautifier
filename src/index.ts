@@ -1,2 +1,5 @@
-const  a = 1;
-export default a;
+function beautifyCypher(query: string) {
+    return query + "TEST";
+}
+
+export default beautifyCypher;
