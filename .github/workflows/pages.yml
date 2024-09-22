@@ -36,6 +36,7 @@ jobs:
           node-version: 20
           registry-url: https://registry.npmjs.org/
       - run: npm install
+      - run: npm run test
       - run: npm run build-web
       - name: Setup Pages
         uses: actions/configure-pages@v5
