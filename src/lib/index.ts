@@ -39,6 +39,11 @@ function beautifyCypher(query: string) {
     .replace(/  +/g, " ")
     .trim();
 
+  // no spaces before ":"
+  query = query.replace(/( :)/gi, function (match) {
+    return match.trim();
+  });
+
   let result = "";
   let brackets: string[] = [];
   let currentQuoute = "";

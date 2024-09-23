@@ -34,6 +34,7 @@ ON CREATE
 \t\t\tinventory.material_id = row.material,
 \t\t\tinventory.site_id = row.site,
 \t\t\tinventory.updated_on = datetime()
+return {qwe: inventory.batch_id, asd: inventory.updated_on}
 `;
 
 beautify();
