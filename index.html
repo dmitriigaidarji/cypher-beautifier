@@ -13,6 +13,7 @@
   <body>
     <div id="app">
       <h1>Cypher Beautifier</h1>
+      <div class="block">Format your cypher queries</div>
       <div class="block">
         <label>
           Cypher Input:
@@ -26,7 +27,7 @@
       </div>
       <div class="block">
         <label>
-          Cypher Output:
+          Beautified Cypher Output:
           <textarea
             id="output"
             name="output"
@@ -34,6 +35,36 @@
             placeholder="Beautified cypher will be displayed here"
           ></textarea>
         </label>
+      </div>
+
+      <div class="footer">
+        <div>
+          <label>
+            Made by
+            <a href="https://gaidarji.com" target="_blank">Dmitrii Gaidarji</a>
+            <a
+              href="https://github.com/dmitriigaidarji/cypher-beautifier"
+              target="_blank"
+              >(source)</a
+            >
+          </label>
+        </div>
+
+        <div>
+          <label>
+            Used in
+            <a
+              href="https://pfizer-digital-manufacturing.github.io/neo4j-browser/"
+              target="_blank"
+              >Neo4j Browser Fork</a
+            >
+            <a
+              href="https://github.com/Pfizer-Digital-Manufacturing/neo4j-browser"
+              target="_blank"
+              >(source)</a
+            >
+          </label>
+        </div>
       </div>
     </div>
     <script type="module" src="/src/web/main.ts"></script>

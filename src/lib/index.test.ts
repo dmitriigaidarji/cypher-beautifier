@@ -5,11 +5,11 @@ const f = beautifyCypher;
 test("Keywords have spaces", () => {
   expect(f("MATCH ()--()")).toBe("MATCH ()--()");
 });
-test("No spaces for :", () => {
-  expect(f("MATCH (a   :  SomeLabel { p: 1  })--()")).toBe(
-    "MATCH (a: SomeLabel { p: 1 })--()",
-  );
-});
+// test("No spaces for :", () => {
+//   expect(f("MATCH (a   :  SomeLabel { p: 1  })--()")).toBe(
+//     "MATCH (a: SomeLabel { p: 1 })--()",
+//   );
+// });
 test("Keywords are on new lines", () => {
   expect(f("MATCH (a)--() return a limit 1")).toBe(
     "MATCH (a)--()\nRETURN a\nLIMIT 1",

@@ -32,13 +32,16 @@ body {
 
 h1 {
   font-size: 3.2em;
-  line-height: 1.1;
 }
 form {
   margin: 40px 0;
 }
+.footer {
+  margin-top: 100px;
+  padding: 1em;
+}
 #submit {
- display: block;
+  display: block;
   margin: 0 auto;
   padding: 0.5em 3em;
   cursor: pointer;
