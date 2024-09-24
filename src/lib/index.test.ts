@@ -2,6 +2,17 @@ import { expect, test } from "vitest";
 import beautifyCypher from "./index.ts";
 
 const f = beautifyCypher;
+test("Can preserve comments", () => {
+  expect(
+    f(`match (a:Drawing) // inline comment
+return a
+// new line comment
+limit 1`),
+  ).toBe(`MATCH (a:Drawing) // inline comment
+RETURN a
+// new line comment
+LIMIT 1`);
+});
 test("Keywords have spaces", () => {
   expect(f("MATCH ()--()")).toBe("MATCH ()--()");
 });
