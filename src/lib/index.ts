@@ -1,17 +1,11 @@
 const allKeywords = [
-  "CASE",
   "AND",
   "OR",
-  "WHEN",
   "XOR",
-  "DISTINCT",
-  "IN",
-  "AS",
   "STARTS",
   "ENDS",
   "WITH",
   "CONTAINS",
-  "NOT",
   "OPTIONAL MATCH",
   "MERGE",
   "MATCH",
@@ -21,6 +15,10 @@ const allKeywords = [
   "LIMIT",
   "ON",
   "CYPHER",
+  "WHERE",
+  "OPTIONAL",
+  "CASE",
+  "UNION",
 ];
 const bracketPairs = {
   "(": ")",
@@ -47,9 +45,10 @@ function beautifyCypher(query: string) {
       const end = query.indexOf("\n", i + 1);
       const middle = query.substring(i + 2, end);
       const jump = commentStart.length + commentEND.length + middle.length - 2;
-      let isNewLine =
-        query.charAt(i - 1) === "\n" ||
-        (query.charAt(i - 1) === " " && query.charAt(i - 2) === "\n");
+      const isNewLine = true;
+      // let isNewLine =
+      //   query.charAt(i - 1) === "\n" ||
+      //   (query.charAt(i - 1) === " " && query.charAt(i - 2) === "\n");
       // let j = i - 1;
       // while (j > 0) {
       //   if (query.charAt(j) === " ") {
@@ -93,6 +92,7 @@ function beautifyCypher(query: string) {
   // add indents
   let currentIndent = 0;
   const indentSize = 6;
+  let lastKeyword = "";
   while (i < query.length) {
     const char = query.charAt(i);
     if (quotes.includes(char)) {
@@ -117,20 +117,15 @@ function beautifyCypher(query: string) {
         const isNewLine = query.charAt(i + 1) === commentNewLineStart[1];
         result += str;
         str = "";
-        let copyOver = "";
-        // copy current indents to the new line;
-        let j = result.length - 1;
-        while (j > 0 && result.charAt(j) === " ") {
-          j--;
-        }
-        if (j > 0) {
-          copyOver = result.substring(j + 1);
-        }
+
         if (isNewLine) {
           result = result.trimEnd();
         }
         result += `${isNewLine ? "\n" : ""}//${query.substring(i + commentStart.length, end)}\n`;
-        result += copyOver;
+        // result += copyOver;
+        if (currentIndent > 0) {
+          result += oneTab + oneTab;
+        }
         i = end + commentEND.length - 1;
       }
       // brackets
@@ -154,14 +149,52 @@ function beautifyCypher(query: string) {
           // close word
           if (allKeywords.includes(str.toUpperCase())) {
             str = str.toUpperCase();
-            if (str === "SET") {
-              currentIndent += 2;
-              result =
-                result.trim() + "\n" + oneTab + str + "\n" + oneTab + oneTab;
+            if (
+              str === "SET" ||
+              str === "AND" ||
+              str === "WITH" ||
+              str === "OR" ||
+              str === "RETURN" ||
+              str === "WHERE" ||
+              str === "CASE"
+            ) {
+              currentIndent += 1;
+              const leftTab = [
+                "SET",
+                "AND",
+                "WITH",
+                "OR",
+                "WHERE",
+                "CASE",
+              ].includes(str)
+                ? oneTab
+                : "";
+              let leftNewLine = "\n";
+              if (
+                (str === "WHERE" && lastKeyword === "WITH") ||
+                str === "RETURN"
+              ) {
+                leftNewLine += "\n";
+              }
+              result = result.trim() + leftNewLine + leftTab + str + " "; //+ oneTab + oneTab;
             } else {
               currentIndent = 0;
-              result = result.trim() + "\n" + str + " ";
+              let newLines = "\n";
+              if (str === "MATCH" && lastKeyword !== "MATCH") {
+                newLines += "\n";
+              } else if (
+                str === "OPTIONAL" &&
+                query.substring(i + 1, i + 6) === "MATCH"
+              ) {
+                if (lastKeyword !== "MATCH") {
+                  newLines += "\n";
+                }
+                str = "OPTIONAL MATCH";
+                i = i + 6;
+              }
+              result = result.trim() + newLines + str + " ";
             }
+            lastKeyword = str;
           } else {
             result += str + " ";
           }
@@ -170,7 +203,17 @@ function beautifyCypher(query: string) {
       }
       // if comma; end word
       else if (char === "," && currentIndent > 0 && brackets.length === 0) {
-        result += str + char + "\n" + oneTab + oneTab;
+        if (str) {
+          result = result + str + char + "\n" + oneTab + oneTab;
+        } else {
+          // remove space before comma
+          result = result.trimEnd() + char + "\n" + oneTab + oneTab;
+        }
+        str = "";
+      }
+      // add space after comma
+      else if (char === "," && query.charAt(i + 1) !== " ") {
+        result += str + char + " ";
         str = "";
       }
       // else; continue word

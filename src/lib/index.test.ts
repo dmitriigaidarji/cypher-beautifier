@@ -8,7 +8,9 @@ test("Can preserve comments", () => {
 return a
 // new line comment
 limit 1`),
-  ).toBe(`MATCH (a:Drawing) // inline comment
+  ).toBe(`MATCH (a:Drawing)
+// inline comment
+
 RETURN a
 // new line comment
 LIMIT 1`);
@@ -23,7 +25,7 @@ test("No spaces for :", () => {
 });
 test("Keywords are on new lines", () => {
   expect(f("MATCH (a)--() return a limit 1")).toBe(
-    "MATCH (a)--()\nRETURN a\nLIMIT 1",
+    "MATCH (a)--()\n\nRETURN a\nLIMIT 1",
   );
 });
 
