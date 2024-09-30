@@ -21,6 +21,21 @@ const allKeywords = [
   "EXISTS",
 ];
 const operators = ["STARTS", "ENDS", "IS", "NULL", "NOT", "IN"];
+const noIndentWords = [
+  "DATE",
+  "TOSTRING",
+  "TOFLOAT",
+  // "COALESCE",
+  "ROUND",
+  "SUM",
+  "ELEMENTID",
+  "ID",
+  "MAX",
+  "MIN",
+  "LABELS",
+  "PROPERTIES",
+  // "ANY",
+];
 const bracketPairs = {
   "(": ")",
   "{": "}",
@@ -159,14 +174,15 @@ function beautifyCypher(query: string, options?: IProps) {
           if (
             char === "(" &&
             str.length > 1 &&
-            str[0].match(/[a-z]/i)
+            str[0].match(/[a-z]/i) &&
+            !noIndentWords.some((t) => str.toUpperCase().includes(t))
             // nextBracketIsClosingRound(result.substring(i + 1))
           ) {
             brackets.push({
               char,
               isRoundForIndent: true,
             });
-            currentIndent++;
+            currentIndent += 1;
             str += "\n" + getIndentSpaces(currentIndent);
             roundParenthesisCount++;
           } else {
@@ -192,7 +208,8 @@ function beautifyCypher(query: string, options?: IProps) {
             last.isRoundForIndent
           ) {
             roundParenthesisCount--;
-            str += "\n" + getIndentSpaces(currentIndent) + char;
+            str += "\n" + getIndentSpaces(Math.max(1, currentIndent)) + char;
+            // currentIndent = Math.max(0, currentIndent - 1);
           } else {
             str += char;
           }
@@ -212,7 +229,7 @@ function beautifyCypher(query: string, options?: IProps) {
               str === "OR" ||
               str === "CASE"
             ) {
-              currentIndent += 1;
+              currentIndent = Math.max(1, currentIndent);
               const leftTab = ["SET", "AND", "WITH", "OR", "CASE"].includes(str)
                 ? oneTab
                 : "";
@@ -226,6 +243,7 @@ function beautifyCypher(query: string, options?: IProps) {
               //   minimalIndent: brackets.length,
               // });
               let newLines = "\n";
+              let addSpaceInEnd = true;
               let addIndent = 0;
               if (
                 str === "MATCH" &&
@@ -246,17 +264,27 @@ function beautifyCypher(query: string, options?: IProps) {
                 str === "EXISTS" &&
                 query.substring(i + 1, i + 2) === "{"
               ) {
-                str += " {\n";
+                str += " {\n" + getIndentSpaces(1);
                 brackets.push({ char: "{", isRoundForIndent: false });
                 i = i + 1;
                 addIndent++;
+                addSpaceInEnd = false;
+              } else if (
+                str === "RETURN" &&
+                query.substring(i + 1, i + 2) === "{"
+              ) {
+                str += " {\n" + getIndentSpaces(1);
+                brackets.push({ char: "{", isRoundForIndent: false });
+                i = i + 1;
+                addIndent++;
+                addSpaceInEnd = false;
               }
               result =
                 result.trimEnd() +
                 newLines +
                 getIndentSpaces(currentIndent) +
                 str +
-                " ";
+                (addSpaceInEnd ? " " : "");
               currentIndent += addIndent;
             }
             lastKeyword = str;
@@ -283,6 +311,7 @@ function beautifyCypher(query: string, options?: IProps) {
       // if comma; end word
       else if (char === ",") {
         if (str) {
+          currentIndent = Math.max(1, currentIndent);
           result = result + str + char + "\n" + getIndentSpaces(currentIndent);
         } else {
           // remove space before comma
