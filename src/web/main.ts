@@ -160,4 +160,19 @@ function beautify() {
 //         end as year
 //
 // `;
+input.value = `
+//  brand_tags_drawing_via_component
+MATCH (co:Component) 
+  MATCH (b:Brand) WHERE "Drawing" in b.tags  
+  WITH b, co,
+      [b in b.aliases | replace(replace(replace(toUpper(b),'[','\\['),':','\\:*'),'|','')] as aliases
+  WHERE co.component_desc is not null
+  AND co.material_id is not null
+  AND any(a IN aliases WHERE co.component_desc  =~ '.*(^|\\\\W)' + a + '($|\\\\W).*')
+WITH b, co, [a IN aliases WHERE co.component_desc =~ '.*(^|\\\\W)' + a + '($|\\\\W).*'] as matched_aliases_  
+WITH b, co, [m IN matched_aliases_ | replace(m,'\\\\','')] as matched_aliases
+match (d:Drawing)-[:INCLUDES]->(co)
+MERGE (b)-[t:TAGS]->(d)
+  SET t.matched_aliases = apoc.coll.union(t.matched_aliases, matched_aliases),
+      t.reason = "Drawing's components material name matches brand category aliases"`;
 beautify();

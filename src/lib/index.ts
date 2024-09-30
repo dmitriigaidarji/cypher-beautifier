@@ -160,6 +160,12 @@ function beautifyCypher(query: string, options?: IProps) {
       else if (allBrackets.includes(char)) {
         if (openingBrackets.includes(char)) {
           brackets.push(char);
+          str += char;
+          // apoc calls etc. go next line
+          if (char === "(" && str.length > 1 && str[0].match(/[a-z]/i)) {
+            currentIndent++;
+            str += "\n" + getIndentSpaces(currentIndent);
+          }
         } else {
           const last = brackets.pop() as "{";
           const lastPaired = bracketPairs[last];
@@ -168,12 +174,12 @@ function beautifyCypher(query: string, options?: IProps) {
               `Wrong bracket. Expected ${lastPaired}, but received ${char}`,
             );
           }
-        }
-
-        if (char === "}" && brackets.length === 0) {
-          str += "\n" + char;
-        } else {
-          str += char;
+          currentIndent = Math.max(0, currentIndent - 1);
+          if (char === "}" && brackets.length === 0) {
+            str += "\n" + char;
+          } else {
+            str += char;
+          }
         }
       }
       // if space; end word
@@ -229,9 +235,6 @@ function beautifyCypher(query: string, options?: IProps) {
                 i = i + 1;
                 addIndent++;
               }
-              if (str === "EXISTS") {
-                console.log(1, query.substring(i + 1, i + 2));
-              }
               result =
                 result.trimEnd() +
                 newLines +
@@ -264,10 +267,11 @@ function beautifyCypher(query: string, options?: IProps) {
       // if comma; end word
       else if (char === ",") {
         if (str) {
-          result = result + str + char + "\n" + oneTab + oneTab;
+          result = result + str + char + "\n" + getIndentSpaces(currentIndent);
         } else {
           // remove space before comma
-          result = result.trimEnd() + char + "\n" + oneTab + oneTab;
+          result =
+            result.trimEnd() + char + "\n" + getIndentSpaces(currentIndent);
         }
         str = "";
       }
