@@ -77,22 +77,16 @@ function encodeComments(query: string) {
 function getIndentSpaces(indent: number) {
   return Array(indent).fill(oneTab).join("");
 }
-function updateIndent({
-  indent,
-  keyword,
-  minimalIndent,
-}: {
-  keyword: string;
-  indent: number;
-  minimalIndent: number;
-}) {
-  switch (keyword) {
-    case "CALL":
-    case "ORDER":
-      return minimalIndent;
-    default:
-      return indent;
+
+function nextBracketIsClosingRound(str: string): boolean {
+  let i = 0;
+  while (i < str.length) {
+    if (allBrackets.includes(str.charAt(i))) {
+      return str.charAt(i) === ")";
+    }
+    i++;
   }
+  return false;
 }
 interface IProps {
   parseStrings?: boolean; // default false
@@ -112,12 +106,13 @@ function beautifyCypher(query: string, options?: IProps) {
   });
 
   let result = "";
-  let brackets: string[] = [];
+  let brackets: { char: string; isRoundForIndent: boolean }[] = [];
   let currentQuoute = "";
   let str = "";
   let insideSting = false;
   // add indents
   let currentIndent = 0;
+  let roundParenthesisCount = 0;
   const indentSize = 6;
   let lastKeyword = "";
   let i = 0;
@@ -159,16 +154,30 @@ function beautifyCypher(query: string, options?: IProps) {
       // brackets
       else if (allBrackets.includes(char)) {
         if (openingBrackets.includes(char)) {
-          brackets.push(char);
           str += char;
           // apoc calls etc. go next line
-          if (char === "(" && str.length > 1 && str[0].match(/[a-z]/i)) {
+          if (
+            char === "(" &&
+            str.length > 1 &&
+            str[0].match(/[a-z]/i)
+            // nextBracketIsClosingRound(result.substring(i + 1))
+          ) {
+            brackets.push({
+              char,
+              isRoundForIndent: true,
+            });
             currentIndent++;
             str += "\n" + getIndentSpaces(currentIndent);
+            roundParenthesisCount++;
+          } else {
+            brackets.push({
+              char,
+              isRoundForIndent: false,
+            });
           }
         } else {
-          const last = brackets.pop() as "{";
-          const lastPaired = bracketPairs[last];
+          const last = brackets.pop()!;
+          const lastPaired = bracketPairs[last?.char as "{"];
           if (lastPaired !== char) {
             throw Error(
               `Wrong bracket. Expected ${lastPaired}, but received ${char}`,
@@ -177,6 +186,13 @@ function beautifyCypher(query: string, options?: IProps) {
           currentIndent = Math.max(0, currentIndent - 1);
           if (char === "}" && brackets.length === 0) {
             str += "\n" + char;
+          } else if (
+            char === ")" &&
+            roundParenthesisCount > 0 &&
+            last.isRoundForIndent
+          ) {
+            roundParenthesisCount--;
+            str += "\n" + getIndentSpaces(currentIndent) + char;
           } else {
             str += char;
           }
@@ -231,7 +247,7 @@ function beautifyCypher(query: string, options?: IProps) {
                 query.substring(i + 1, i + 2) === "{"
               ) {
                 str += " {\n";
-                brackets.push("{");
+                brackets.push({ char: "{", isRoundForIndent: false });
                 i = i + 1;
                 addIndent++;
               }

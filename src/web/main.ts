@@ -176,3 +176,18 @@ function beautify() {
 //   SET t.matched_aliases = apoc.coll.union(t.matched_aliases, matched_aliases),
 //       t.reason = "Drawing's components material name matches brand category aliases"`;
 // beautify();
+
+// input.value = `
+// CALL apoc.periodic.iterate(
+// "MATCH (r:Reporting:Process)
+// MATCH (p:Position {email:r.user_email}) <-[h:HELD|HOLDS]-(per:Person)
+// WHERE r.source = 'veeva'
+// AND NOT (p)-[:SQA_CONTACT_FOR]->(r)
+// AND coalesce(h.begin,date('1990-01-01')) <= r.happened <= coalesce(h.end,date('2990-01-01'))
+// WITH p, r, case when 'Colleague' in labels(p) then 1 else 2 end as sorted
+// ORDER BY sorted asc //use Colleague as preferred position if multiple matches exist
+// LIMIT 1
+// return r, p",
+// "MERGE (p)-[:SQA_CONTACT_FOR]->(r)",
+// {batchSize:2000, parallel:false})`;
+// beautify();
