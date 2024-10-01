@@ -20,6 +20,7 @@ const allKeywords = [
   "ORDER",
   "EXISTS",
   "WHEN",
+  "UNWIND",
 ];
 const operators = ["STARTS", "ENDS", "IS", "NULL", "NOT", "IN"];
 const noIndentWords = [
