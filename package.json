@@ -5,6 +5,17 @@
     "name": "Dmitrii Gaidarji",
     "url": "https://cypher.gaidarji.com"
   },
+  "keywords": [
+    "cypher",
+    "beautifier",
+    "formatter",
+    "neo4j",
+    "pretty"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dmitriigaidarji/cypher-beautifier.git"
+  },
   "version": "0.0.9",
   "type": "module",
   "main": "dist/index.cjs",
