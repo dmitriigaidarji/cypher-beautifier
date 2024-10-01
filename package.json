@@ -49,5 +49,6 @@
     "vite": "^5.4.1",
     "vite-plugin-dts": "^4.2.1",
     "vitest": "^2.1.1"
-  }
+  },
+  "license": "GPL-3.0"
 }
