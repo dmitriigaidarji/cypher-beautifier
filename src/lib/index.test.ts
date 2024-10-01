@@ -2,6 +2,16 @@ import { expect, test } from "vitest";
 import beautifyCypher from "./index.ts";
 
 const f = beautifyCypher;
+test("simple", () => {
+  expect(
+    f(`
+    match (n) where n.name = "Bob" return n limit 1
+`),
+  ).toBe(`MATCH (n)
+WHERE n.name = "Bob"
+RETURN n
+LIMIT 1`);
+});
 test("Can preserve comments", () => {
   expect(
     f(`match (a:Drawing) // inline comment
