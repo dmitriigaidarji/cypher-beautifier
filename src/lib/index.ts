@@ -19,6 +19,7 @@ const allKeywords = [
   "CALL",
   "ORDER",
   "EXISTS",
+  "WHEN",
 ];
 const operators = ["STARTS", "ENDS", "IS", "NULL", "NOT", "IN"];
 const noIndentWords = [
@@ -34,7 +35,12 @@ const noIndentWords = [
   "MIN",
   "LABELS",
   "PROPERTIES",
+  "DATETIME",
+  "COLLECT",
   // "ANY",
+  "HEAD",
+  "NODES",
+  "RELATIONSHIPS",
 ];
 const bracketPairs = {
   "(": ")",
@@ -93,16 +99,6 @@ function getIndentSpaces(indent: number) {
   return Array(indent).fill(oneTab).join("");
 }
 
-function nextBracketIsClosingRound(str: string): boolean {
-  let i = 0;
-  while (i < str.length) {
-    if (allBrackets.includes(str.charAt(i))) {
-      return str.charAt(i) === ")";
-    }
-    i++;
-  }
-  return false;
-}
 interface IProps {
   parseStrings?: boolean; // default false
 }
@@ -174,7 +170,7 @@ function beautifyCypher(query: string, options?: IProps) {
           if (
             char === "(" &&
             str.length > 1 &&
-            str[0].match(/[a-z]/i) &&
+            str[str.length - 2].match(/[a-z]/i) &&
             !noIndentWords.some((t) => str.toUpperCase().includes(t))
             // nextBracketIsClosingRound(result.substring(i + 1))
           ) {
@@ -201,7 +197,9 @@ function beautifyCypher(query: string, options?: IProps) {
           }
           currentIndent = Math.max(0, currentIndent - 1);
           if (char === "}" && brackets.length === 0) {
-            str += "\n" + char;
+            str += "\n" + char + " ";
+            result += str;
+            str = "";
           } else if (
             char === ")" &&
             roundParenthesisCount > 0 &&
