@@ -1,4 +1,3 @@
-
 # Cypher Beautifier
 
 A simple NPM package that formats and beautifies Cypher queries for improved readability
