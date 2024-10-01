@@ -1,5 +1,7 @@
 # Cypher Beautifier
 
+[![HitCount](https://hits.dwyl.com/dmitriigaidarji/cypher-beautifier.svg)](https://hits.dwyl.com/dmitriigaidarji/cypher-beautifier)
+
 A simple NPM package that formats and beautifies Cypher queries for improved readability
 
 ### NPM
