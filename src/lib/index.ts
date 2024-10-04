@@ -66,38 +66,33 @@ function encodeComments(query: string) {
   while (i < query.length) {
     if (query.charAt(i) === "/" && query.charAt(i + 1) === "/") {
       const end = query.indexOf("\n", i + 1);
-      const middle = query.substring(i + 2, end);
-      const jump = commentStart.length + commentEND.length + middle.length - 2;
-      const isNewLine = true;
-      // let isNewLine =
-      //   query.charAt(i - 1) === "\n" ||
-      //   (query.charAt(i - 1) === " " && query.charAt(i - 2) === "\n");
-      // let j = i - 1;
-      // while (j > 0) {
-      //   if (query.charAt(j) === " ") {
-      //     j--;
-      //   } else if (query.charAt(j) === "\n") {
-      //     isNewLine = true;
-      //     j = -1;
-      //   } else {
-      //     j = -1;
-      //   }
-      // }
-      query =
-        query.substring(0, i) +
-        (isNewLine ? commentNewLineStart : commentStart) +
-        middle +
-        commentEND +
-        query.substring(end);
-      i += jump;
+      if (end !== -1) {
+        const middle = query.substring(i + 2, end);
+        const jump =
+          commentStart.length + commentEND.length + middle.length - 2;
+        const isNewLine = true;
+        if (middle.trim().length > 0) {
+          query =
+            query.substring(0, i) +
+            (isNewLine ? commentNewLineStart : commentStart) +
+            middle +
+            commentEND +
+            query.substring(end);
+          i += jump;
+        } else {
+          i++;
+        }
+      } else {
+        i++;
+      }
     } else {
       i++;
     }
   }
   return query;
 }
-function getIndentSpaces(indent: number) {
-  return Array(indent).fill(oneTab).join("");
+function getIndentSpaces(indent: number, minimumIndent: number) {
+  return Array(Math.max(indent, minimumIndent)).fill(oneTab).join("");
 }
 
 interface IProps {
@@ -166,27 +161,33 @@ function beautifyCypher(query: string, options?: IProps) {
       // brackets
       else if (allBrackets.includes(char)) {
         if (openingBrackets.includes(char)) {
-          str += char;
           // apoc calls etc. go next line
           if (
             char === "(" &&
-            str.length > 1 &&
-            str[str.length - 2].match(/[a-z]/i) &&
-            !noIndentWords.some((t) => str.toUpperCase().includes(t))
-            // nextBracketIsClosingRound(result.substring(i + 1))
+            str.length > 0 &&
+            str[str.length - 1].match(/[a-z]/i) &&
+            !noIndentWords.some((t) => str.toUpperCase().includes(t)) &&
+            !allKeywords.some((t) => str.toUpperCase().includes(t))
           ) {
             brackets.push({
               char,
               isRoundForIndent: true,
             });
-            currentIndent += 1;
-            str += "\n" + getIndentSpaces(currentIndent);
+            currentIndent = brackets.length + 1;
+            str +=
+              char + "\n" + getIndentSpaces(currentIndent, brackets.length);
             roundParenthesisCount++;
           } else {
             brackets.push({
               char,
               isRoundForIndent: false,
             });
+            // add a space after keyword
+            if (allKeywords.some((t) => str.toUpperCase().includes(t))) {
+              str += " " + char;
+            } else {
+              str += char;
+            }
           }
         } else {
           const last = brackets.pop()!;
@@ -207,11 +208,14 @@ function beautifyCypher(query: string, options?: IProps) {
             last.isRoundForIndent
           ) {
             roundParenthesisCount--;
-            str += "\n" + getIndentSpaces(Math.max(1, currentIndent)) + char;
-            // currentIndent = Math.max(0, currentIndent - 1);
+            str +=
+              "\n" +
+              getIndentSpaces(Math.max(1, currentIndent), brackets.length) +
+              char;
           } else {
             str += char;
           }
+          currentIndent = brackets.length;
         }
       }
       // if space; end word
@@ -225,8 +229,7 @@ function beautifyCypher(query: string, options?: IProps) {
               str === "SET" ||
               str === "AND" ||
               str === "WITH" ||
-              str === "OR" ||
-              str === "CASE"
+              str === "OR"
             ) {
               currentIndent = Math.max(1, currentIndent);
               const leftTab = ["SET", "AND", "WITH", "OR", "CASE"].includes(str)
@@ -235,7 +238,7 @@ function beautifyCypher(query: string, options?: IProps) {
               let leftNewLine = "\n";
               result = result.trimEnd() + leftNewLine + leftTab + str + " "; //+ oneTab + oneTab;
             } else {
-              currentIndent = brackets.length;
+              currentIndent = Math.max(brackets.length, currentIndent - 1);
               // currentIndent = updateIndent({
               //   keyword: str,
               //   indent: currentIndent,
@@ -252,7 +255,7 @@ function beautifyCypher(query: string, options?: IProps) {
                 newLines += "\n";
               } else if (
                 str === "OPTIONAL" &&
-                query.substring(i + 1, i + 6) === "MATCH"
+                query.substring(i + 1, i + 6).toUpperCase() === "MATCH"
               ) {
                 if (lastKeyword !== "MATCH") {
                   newLines += "\n";
@@ -263,7 +266,7 @@ function beautifyCypher(query: string, options?: IProps) {
                 str === "EXISTS" &&
                 query.substring(i + 1, i + 2) === "{"
               ) {
-                str += " {\n" + getIndentSpaces(1);
+                str += " {\n" + getIndentSpaces(1, brackets.length);
                 brackets.push({ char: "{", isRoundForIndent: false });
                 i = i + 1;
                 addIndent++;
@@ -272,16 +275,22 @@ function beautifyCypher(query: string, options?: IProps) {
                 str === "RETURN" &&
                 query.substring(i + 1, i + 2) === "{"
               ) {
-                str += " {\n" + getIndentSpaces(1);
+                str += " {\n" + getIndentSpaces(2, brackets.length);
                 brackets.push({ char: "{", isRoundForIndent: false });
                 i = i + 1;
                 addIndent++;
                 addSpaceInEnd = false;
+              } else if (
+                str === "CASE" &&
+                query.substring(i + 1, i + 5).toUpperCase() === "WHEN"
+              ) {
+                str += " WHEN ";
+                i = i + 5;
               }
               result =
                 result.trimEnd() +
                 newLines +
-                getIndentSpaces(currentIndent) +
+                getIndentSpaces(currentIndent, 0) +
                 str +
                 (addSpaceInEnd ? " " : "");
               currentIndent += addIndent;
@@ -310,12 +319,20 @@ function beautifyCypher(query: string, options?: IProps) {
       // if comma; end word
       else if (char === ",") {
         if (str) {
-          currentIndent = Math.max(1, currentIndent);
-          result = result + str + char + "\n" + getIndentSpaces(currentIndent);
+          currentIndent = brackets.length + 1;
+          result =
+            result +
+            str +
+            char +
+            "\n" +
+            getIndentSpaces(currentIndent, brackets.length);
         } else {
           // remove space before comma
           result =
-            result.trimEnd() + char + "\n" + getIndentSpaces(currentIndent);
+            result.trimEnd() +
+            char +
+            "\n" +
+            getIndentSpaces(currentIndent, brackets.length);
         }
         str = "";
       }
