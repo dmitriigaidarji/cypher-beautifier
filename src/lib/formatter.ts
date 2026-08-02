@@ -656,7 +656,18 @@ class Formatter {
     let previousIndex = options.previous ?? -1;
     let suppressSeparator = previousIndex < 0;
     let pendingHardline = false;
-    const breakLine: Doc = options.indentBreaks ? indent(line) : line;
+    // Index of the first continuation break. Everything from there to the end
+    // of the clause body is wrapped in a single indent, so continuation lines
+    // hang under the keyword *and* nested constructs (a CASE, a bracket group)
+    // inherit that level as their base. Content before the first break stays at
+    // level 0, which keeps a call that opens on the keyword's own line from
+    // being indented twice.
+    let firstBreak = -1;
+    const markBreak = () => {
+      if (options.indentBreaks && firstBreak < 0) {
+        firstBreak = parts.length;
+      }
+    };
 
     const separate = () => {
       if (pendingHardline) {
@@ -736,7 +747,8 @@ class Formatter {
         }
         if (BOOLEAN_OPERATORS.has(word)) {
           if (previousIndex >= 0 && !suppressSeparator) {
-            parts.push(breakLine);
+            markBreak();
+            parts.push(line);
           } else {
             separate();
           }
@@ -771,7 +783,8 @@ class Formatter {
         case "punctuation":
           parts.push(token.value);
           if (token.value === "," && this.context !== "quantifier") {
-            parts.push(breakLine);
+            markBreak();
+            parts.push(line);
             suppressSeparator = true;
           }
           break;
@@ -786,6 +799,12 @@ class Formatter {
       }
     }
 
+    if (firstBreak >= 0) {
+      return [
+        ...parts.slice(0, firstBreak),
+        indent(concat(parts.slice(firstBreak))),
+      ];
+    }
     return parts;
   }
 

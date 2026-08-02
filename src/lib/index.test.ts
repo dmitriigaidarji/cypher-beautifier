@@ -338,6 +338,35 @@ describe("wrapping", () => {
     );
   });
 
+  test("indents a nested CASE relative to its place in the list", () => {
+    expectFormatted(
+      "match (n) return n.sku as sku, case when n.price > 1000 then 'premium' when n.price > 500 then 'mid' else 'budget' end as tier, n.other as other",
+      [
+        "MATCH (n)",
+        "RETURN n.sku AS sku,",
+        "  CASE",
+        "    WHEN n.price > 1000 THEN 'premium'",
+        "    WHEN n.price > 500 THEN 'mid'",
+        "    ELSE 'budget'",
+        "  END AS tier,",
+        "  n.other AS other",
+      ].join("\n"),
+    );
+  });
+
+  test("a call opening on the keyword's line is not indented twice", () => {
+    expectFormatted(
+      `CALL apoc.periodic.iterate("MATCH (n) RETURN n", "SET n.x = 1", {batchSize: 1000, parallel: false})`,
+      [
+        "CALL apoc.periodic.iterate(",
+        `  "MATCH (n) RETURN n",`,
+        `  "SET n.x = 1",`,
+        "  {batchSize: 1000, parallel: false}",
+        ")",
+      ].join("\n"),
+    );
+  });
+
   test("respects maxWidth", () => {
     expectFormatted(
       "MATCH (person:Person) RETURN person.name AS name, person.age AS age",
