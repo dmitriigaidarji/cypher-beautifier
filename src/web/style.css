@@ -48,6 +48,18 @@ form {
 }
 textarea {
   min-height: 350px !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre;
+}
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: center;
+}
+.options .input {
+  width: 5.5rem;
 }
 #app {
   max-width: 1280px;

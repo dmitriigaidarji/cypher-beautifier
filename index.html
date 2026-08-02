@@ -27,15 +27,44 @@
           ></textarea>
         </label>
       </div>
-      <div class="block">
+      <div class="block options">
         <label class="checkbox">
+          <input name="parse-strings" id="parse-strings" type="checkbox" />
+          Format queries inside strings
+        </label>
+        <label>
+          Keywords
+          <span class="select">
+            <select id="keyword-case" name="keyword-case">
+              <option value="upper">UPPERCASE</option>
+              <option value="lower">lowercase</option>
+              <option value="preserve">As written</option>
+            </select>
+          </span>
+        </label>
+        <label>
+          Indent
           <input
-            name="parse-strings"
-            id="parse-strings"
-            type="checkbox"
-            checked="checked"
+            id="indent"
+            name="indent"
+            class="input"
+            type="number"
+            min="0"
+            max="8"
+            value="2"
           />
-          Parse strings
+        </label>
+        <label>
+          Max width
+          <input
+            id="max-width"
+            name="max-width"
+            class="input"
+            type="number"
+            min="20"
+            max="200"
+            value="80"
+          />
         </label>
       </div>
       <div class="block">
@@ -81,6 +110,10 @@
       </div>
     </div>
     <script type="module" src="/src/web/main.ts"></script>
-    <script defer src="https://cloud.umami.is/script.js" data-website-id="7d081da3-26da-4612-b016-d9460bb6b69a"></script>
+    <script
+      defer
+      src="https://cloud.umami.is/script.js"
+      data-website-id="7d081da3-26da-4612-b016-d9460bb6b69a"
+    ></script>
   </body>
 </html>

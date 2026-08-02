@@ -1,0 +1,1 @@
+match (a:Person) where a.active call { with a match (a)-[:WROTE]->(p:Post) where p.published > date('2024-01-01') return p order by p.published desc limit 3 } return a.name as author, collect(p.title) as recentPosts

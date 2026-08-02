@@ -1,0 +1,1 @@
+match (n:Product) where n.price > 100 and n.stock > 0 and n.category in ['tools','garden','kitchen'] return n.sku as sku, case when n.price > 1000 then 'premium' when n.price > 500 then 'mid' else 'budget' end as tier, [x in n.tags where x starts with 'eco' | toUpper(x)] as ecoTags order by n.price desc skip 10 limit 25
