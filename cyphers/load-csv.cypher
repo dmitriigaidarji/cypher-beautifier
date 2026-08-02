@@ -1,0 +1,1 @@
+load csv with headers from 'file:///people.csv' as row merge (p:Person {id: row.id}) on create set p.name=row.name, p.created=datetime() on match set p.updated=datetime() with p, row where row.manager is not null match (m:Person {id: row.manager}) merge (p)-[:REPORTS_TO]->(m)

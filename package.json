@@ -37,7 +37,9 @@
   "scripts": {
     "dev": "vite",
     "build-web": "tsc && vite --config vite-web.config.js build",
+    "build-preview": "tsc && vite --config vite-preview.config.js build && node scripts/build-preview.mjs",
     "build": "tsc --p tsconfig-lib.json && vite --config vite-lib.config.js build",
+    "format-report": "node scripts/format-report.mjs",
     "preview": "vite preview",
     "test": "vitest",
     "pretty": "prettier --write ."

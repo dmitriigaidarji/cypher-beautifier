@@ -1,0 +1,1 @@
+call apoc.periodic.iterate("match (n:Legacy) where n.migrated is null return n", "set n.migrated = true remove n.oldField", {batchSize: 1000, parallel: false}) yield batches, total, errorMessages return batches, total, errorMessages
